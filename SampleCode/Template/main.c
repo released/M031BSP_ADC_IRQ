@@ -41,7 +41,7 @@ typedef enum
 
 #define ADC_CH   							(uint8_t) (2)
 
-#define ADC_SAMPLETIME_MS					(uint16_t) (20)
+#define ADC_SAMPLETIME_MS					(uint16_t) (100)
 
 #define ADC_RESOLUTION						((uint16_t)(4096u))
 #define ADC_REF_VOLTAGE						((uint16_t)(3300u))	//(float)(3.3f)
@@ -80,6 +80,11 @@ typedef enum{
 	
 	flag_DEFAULT	
 }flag_Index;
+
+#define HIBYTE(v1)              					((uint8_t)((v1)>>8))                      //v1 is UINT16
+#define LOBYTE(v1)              					((uint8_t)((v1)&0xFF))
+
+#define	USE_TestOScope
 
 
 uint8_t BitFlag = 0;
@@ -198,9 +203,14 @@ uint16_t ADC_ConvertChannel(uint8_t ch)
 	__IO uint16_t adcRawData_Target = 0;
 	
 	adc_value = ADC_ModifiedMovingAverage(((aADCxConvertedData >>1)<<1));
-	
-	printf("%s : 0x%4X (%d mv )\r\n",__FUNCTION__,adc_value , ADC_CALC_DATA_TO_VOLTAGE(adc_value,ADC_REF_VOLTAGE));
 
+	#if defined (USE_TestOScope)
+    UART_WRITE(UART0, LOBYTE(adc_value));
+    UART_WRITE(UART0, HIBYTE(adc_value));
+
+	#else
+	printf("%s : 0x%4X (%d mv )\r\n",__FUNCTION__,adc_value , ADC_CALC_DATA_TO_VOLTAGE(adc_value,ADC_REF_VOLTAGE));
+	#endif
 	
 	if (adc_value <= ADC_CONVERT_TARGET)
 	{
